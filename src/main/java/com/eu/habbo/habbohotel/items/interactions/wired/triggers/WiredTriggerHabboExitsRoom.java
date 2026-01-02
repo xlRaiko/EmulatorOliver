@@ -1,8 +1,5 @@
 package com.eu.habbo.habbohotel.items.interactions.wired.triggers;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import com.eu.habbo.habbohotel.items.Item;
 import com.eu.habbo.habbohotel.items.interactions.InteractionWiredTrigger;
 import com.eu.habbo.habbohotel.items.interactions.wired.WiredSettings;
@@ -12,31 +9,31 @@ import com.eu.habbo.habbohotel.users.Habbo;
 import com.eu.habbo.habbohotel.wired.WiredHandler;
 import com.eu.habbo.habbohotel.wired.WiredTriggerType;
 import com.eu.habbo.messages.ServerMessage;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class WiredTriggerClickUser extends InteractionWiredTrigger {
-    public static final WiredTriggerType type = WiredTriggerType.CLICK_USER;
+public class WiredTriggerHabboExitsRoom
+extends InteractionWiredTrigger {
+    public static final WiredTriggerType type = WiredTriggerType.EXIT_ROOM;
     private String username = "";
 
-    public WiredTriggerClickUser(ResultSet set, Item baseItem) throws SQLException {
+    public WiredTriggerHabboExitsRoom(ResultSet set, Item baseItem) throws SQLException {
         super(set, baseItem);
     }
 
-    public WiredTriggerClickUser(int id, int userId, Item item, String extradata, int limitedStack, int limitedSells) {
+    public WiredTriggerHabboExitsRoom(int id, int userId, Item item, String extradata, int limitedStack, int limitedSells) {
         super(id, userId, item, extradata, limitedStack, limitedSells);
     }
 
     @Override
     public boolean execute(RoomUnit roomUnit, Room room, Object[] stuff) {
         Habbo habbo = room.getHabbo(roomUnit);
-
         if (habbo != null) {
-            if (!this.username.isEmpty() && stuff[0] instanceof String) {
-                return stuff[0].toString().equalsIgnoreCase(this.username);
+            if (this.username.length() > 0) {
+                return habbo.getHabboInfo().getUsername().equalsIgnoreCase(this.username);
             }
-
             return true;
         }
-
         return false;
     }
 
@@ -68,15 +65,15 @@ public class WiredTriggerClickUser extends InteractionWiredTrigger {
 
     @Override
     public void serializeWiredData(ServerMessage message, Room room) {
-        message.appendBoolean(Boolean.FALSE);
+        message.appendBoolean(false);
         message.appendInt(5);
         message.appendInt(0);
-        message.appendInt(getBaseItem().getSpriteId());
-        message.appendInt(getId());
+        message.appendInt(this.getBaseItem().getSpriteId());
+        message.appendInt(this.getId());
         message.appendString(this.username);
         message.appendInt(0);
         message.appendInt(0);
-        message.appendInt(this.getType().code);
+        message.appendInt(7);
         message.appendInt(0);
         message.appendInt(0);
     }
