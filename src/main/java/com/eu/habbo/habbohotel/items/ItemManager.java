@@ -151,6 +151,9 @@ import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditio
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboCount;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboHasEffect;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboHasHandItem;
+import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboNotHandItem;
+import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotHasHandItem;
+import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotNotHandItem;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboWearsBadge;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionLessTimeElapsed;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionMatchStatePosition;
@@ -442,6 +445,9 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_cnd_actor_in_team", WiredConditionTeamMember.class));
         this.interactionsList.add(new ItemInteraction("wf_cnd_trggrer_on_frn", WiredConditionTriggerOnFurni.class));
         this.interactionsList.add(new ItemInteraction("wf_cnd_has_handitem", WiredConditionHabboHasHandItem.class));
+        this.interactionsList.add(new ItemInteraction("wf_cnd_not_has_handitem", WiredConditionHabboNotHandItem.class));
+        this.interactionsList.add(new ItemInteraction("wf_cnd_bot_has_handitem", WiredConditionBotHasHandItem.class));
+        this.interactionsList.add(new ItemInteraction("wf_cnd_bot_not_has_handitem", WiredConditionBotNotHandItem.class));
         this.interactionsList.add(new ItemInteraction("wf_cnd_date_rng_active", WiredConditionDateRangeActive.class));
 
 
