@@ -1,34 +1,67 @@
 package com.eu.habbo.habbohotel.users;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.eu.habbo.Emulator;
 import com.eu.habbo.habbohotel.achievements.AchievementManager;
 import com.eu.habbo.habbohotel.bots.Bot;
 import com.eu.habbo.habbohotel.gameclients.GameClient;
 import com.eu.habbo.habbohotel.messenger.Messenger;
 import com.eu.habbo.habbohotel.pets.Pet;
-import com.eu.habbo.habbohotel.rooms.*;
+import com.eu.habbo.habbohotel.rooms.Room;
+import com.eu.habbo.habbohotel.rooms.RoomChatMessage;
+import com.eu.habbo.habbohotel.rooms.RoomChatMessageBubbles;
+import com.eu.habbo.habbohotel.rooms.RoomUnit;
+import com.eu.habbo.habbohotel.rooms.RoomUnitType;
+import com.eu.habbo.habbohotel.rooms.RoomUserAction;
 import com.eu.habbo.habbohotel.users.inventory.BadgesComponent;
-import com.eu.habbo.messages.outgoing.generic.alerts.*;
-import com.eu.habbo.messages.outgoing.inventory.*;
+import com.eu.habbo.messages.outgoing.generic.alerts.BubbleAlertComposer;
+import com.eu.habbo.messages.outgoing.generic.alerts.BubbleAlertKeys;
+import com.eu.habbo.messages.outgoing.generic.alerts.GenericAlertComposer;
+import com.eu.habbo.messages.outgoing.generic.alerts.MessagesForYouComposer;
+import com.eu.habbo.messages.outgoing.generic.alerts.StaffAlertWithLinkComposer;
+import com.eu.habbo.messages.outgoing.inventory.AddBotComposer;
+import com.eu.habbo.messages.outgoing.inventory.AddHabboItemComposer;
+import com.eu.habbo.messages.outgoing.inventory.AddPetComposer;
+import com.eu.habbo.messages.outgoing.inventory.InventoryBadgesComposer;
+import com.eu.habbo.messages.outgoing.inventory.InventoryRefreshComposer;
+import com.eu.habbo.messages.outgoing.inventory.RemoveBotComposer;
+import com.eu.habbo.messages.outgoing.inventory.RemoveHabboItemComposer;
+import com.eu.habbo.messages.outgoing.inventory.RemovePetComposer;
 import com.eu.habbo.messages.outgoing.rooms.FloodCounterComposer;
 import com.eu.habbo.messages.outgoing.rooms.ForwardToRoomComposer;
-import com.eu.habbo.messages.outgoing.rooms.users.*;
-import com.eu.habbo.messages.outgoing.users.*;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserActionComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserIgnoredComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserRespectComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserShoutComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserTalkComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserWhisperComposer;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUsersComposer;
+import com.eu.habbo.messages.outgoing.users.AddUserBadgeComposer;
+import com.eu.habbo.messages.outgoing.users.MutedWhisperComposer;
+import com.eu.habbo.messages.outgoing.users.RemoveUserBadgeComposer;
+import com.eu.habbo.messages.outgoing.users.UserCreditsComposer;
+import com.eu.habbo.messages.outgoing.users.UserCurrencyComposer;
+import com.eu.habbo.messages.outgoing.users.UserPointsComposer;
 import com.eu.habbo.plugin.events.users.UserCreditsEvent;
 import com.eu.habbo.plugin.events.users.UserDisconnectEvent;
 import com.eu.habbo.plugin.events.users.UserGetIPAddressEvent;
 import com.eu.habbo.plugin.events.users.UserPointsEvent;
+
 import gnu.trove.TIntCollection;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.set.hash.THashSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.sql.ResultSet;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class Habbo implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Habbo.class);

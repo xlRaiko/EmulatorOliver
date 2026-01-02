@@ -11,45 +11,36 @@ import com.eu.habbo.habbohotel.users.HabboItem;
 import com.eu.habbo.habbohotel.wired.WiredEffectType;
 import com.eu.habbo.habbohotel.wired.WiredHandler;
 import com.eu.habbo.habbohotel.wired.WiredTriggerType;
-import com.eu.habbo.messages.ClientMessage;
 import com.eu.habbo.messages.ServerMessage;
 import gnu.trove.set.hash.THashSet;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WiredTriggerFurniStateToggled extends InteractionWiredTrigger {
+public class WiredTriggerFurniStateToggled
+extends InteractionWiredTrigger {
     private static final WiredTriggerType type = WiredTriggerType.STATE_CHANGED;
-
-    private THashSet<HabboItem> items;
+    public THashSet<HabboItem> items = new THashSet();
 
     public WiredTriggerFurniStateToggled(ResultSet set, Item baseItem) throws SQLException {
         super(set, baseItem);
-        this.items = new THashSet<>();
     }
 
     public WiredTriggerFurniStateToggled(int id, int userId, Item item, String extradata, int limitedStack, int limitedSells) {
         super(id, userId, item, extradata, limitedStack, limitedSells);
-        this.items = new THashSet<>();
     }
 
     @Override
     public boolean execute(RoomUnit roomUnit, Room room, Object[] stuff) {
-        if (stuff.length >= 1) {
-            Habbo habbo = room.getHabbo(roomUnit);
-
-            if (habbo != null) {
-                for (Object object : stuff) {
-                    if (object instanceof WiredEffectType) {
-                        return false;
-                    }
-                }
-
-                if (stuff[0] instanceof HabboItem) {
-                    return this.items.contains(stuff[0]);
-                }
+        Habbo habbo;
+        if (stuff.length >= 1 && (habbo = room.getHabbo(roomUnit)) != null) {
+            for (Object object : stuff) {
+                if (!(object instanceof WiredEffectType)) continue;
+                return false;
+            }
+            if (stuff[0] instanceof HabboItem) {
+                return this.items.contains(stuff[0]);
             }
         }
         return false;
@@ -57,35 +48,32 @@ public class WiredTriggerFurniStateToggled extends InteractionWiredTrigger {
 
     @Override
     public String getWiredData() {
-        return WiredHandler.getGsonBuilder().create().toJson(new JsonData(
-            this.items.stream().map(HabboItem::getId).collect(Collectors.toList())
-        ));
+        return WiredHandler.getGsonBuilder().create().toJson(new JsonData(this.items.stream().map(HabboItem::getId).collect(Collectors.toList())));
     }
 
     @Override
     public void loadWiredData(ResultSet set, Room room) throws SQLException {
-        this.items = new THashSet<>();
-        String wiredData = set.getString("wired_data");
-
-        if (wiredData.startsWith("{")) {
-            JsonData data = WiredHandler.getGsonBuilder().create().fromJson(wiredData, JsonData.class);
-            for (Integer id: data.itemIds) {
-                HabboItem item = room.getHabboItem(id);
-                if (item != null) {
+        block4: {
+            String wiredData;
+            block3: {
+                this.items = new THashSet();
+                wiredData = set.getString("wired_data");
+                if (!wiredData.startsWith("{")) break block3;
+                JsonData data = WiredHandler.getGsonBuilder().create().fromJson(wiredData, JsonData.class);
+                for (Integer id : data.itemIds) {
+                    HabboItem item = room.getHabboItem(id);
+                    if (item == null) continue;
                     this.items.add(item);
                 }
+                break block4;
             }
-        } else {
-            if (wiredData.split(":").length >= 3) {
-                super.setDelay(Integer.parseInt(wiredData.split(":")[0]));
-
-                if (!wiredData.split(":")[2].equals("\t")) {
-                    for (String s : wiredData.split(":")[2].split(";")) {
-                        HabboItem item = room.getHabboItem(Integer.parseInt(s));
-
-                        if (item != null)
-                            this.items.add(item);
-                    }
+            if (wiredData.split(":").length < 3) break block4;
+            super.setDelay(Integer.parseInt(wiredData.split(":")[0]));
+            if (!wiredData.split(":")[2].equals("\t")) {
+                for (String s : wiredData.split(":")[2].split(";")) {
+                    HabboItem item = room.getHabboItem(Integer.parseInt(s));
+                    if (item == null) continue;
+                    this.items.add(item);
                 }
             }
         }
@@ -103,23 +91,18 @@ public class WiredTriggerFurniStateToggled extends InteractionWiredTrigger {
 
     @Override
     public void serializeWiredData(ServerMessage message, Room room) {
-        THashSet<HabboItem> items = new THashSet<>();
-
+        THashSet<HabboItem> items = new THashSet<HabboItem>();
         for (HabboItem item : this.items) {
             if (item.getRoomId() != this.getRoomId()) {
                 items.add(item);
                 continue;
             }
-
-            if (room.getHabboItem(item.getId()) == null) {
-                items.add(item);
-            }
+            if (room.getHabboItem(item.getId()) != null) continue;
+            items.add(item);
         }
-
         for (HabboItem item : items) {
             this.items.remove(item);
         }
-
         message.appendBoolean(false);
         message.appendInt(WiredHandler.MAXIMUM_FURNI_SELECTION);
         message.appendInt(this.items.size());
@@ -138,13 +121,10 @@ public class WiredTriggerFurniStateToggled extends InteractionWiredTrigger {
     @Override
     public boolean saveData(WiredSettings settings) {
         this.items.clear();
-
         int count = settings.getFurniIds().length;
-
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; ++i) {
             this.items.add(Emulator.getGameEnvironment().getRoomManager().getRoom(this.getRoomId()).getHabboItem(settings.getFurniIds()[i]));
         }
-
         return true;
     }
 

@@ -10,6 +10,9 @@ import com.eu.habbo.habbohotel.items.interactions.InteractionWiredTrigger;
 import com.eu.habbo.habbohotel.items.interactions.wired.WiredTriggerReset;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectGiveReward;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacks;
+import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegative;
+import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegativeCondition;
+import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonOneCondition;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredExtraOrEval;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredExtraRandom;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredExtraUnseen;
@@ -205,90 +208,175 @@ public class WiredHandler {
         return false;
     }
 
-    public static boolean handle(InteractionWiredTrigger trigger, final RoomUnit roomUnit, final Room room, final Object[] stuff, final THashSet<InteractionWiredEffect> effectsToExecute) {
-        long millis = System.currentTimeMillis();
-        int roomUnitId = roomUnit != null ? roomUnit.getId() : -1;
-        if (Emulator.isReady && ((Emulator.getConfig().getBoolean("wired.custom.enabled", false) && (trigger.canExecute(millis) || roomUnitId > -1) && trigger.userCanExecute(roomUnitId, millis)) || (!Emulator.getConfig().getBoolean("wired.custom.enabled", false) && trigger.canExecute(millis))) && trigger.execute(roomUnit, room, stuff)) {
-            trigger.activateBox(room, roomUnit, millis);
+    public static boolean handle(InteractionWiredTrigger trigger,
+                             RoomUnit roomUnit,
+                             Room room,
+                             Object[] stuff,
+                             THashSet<InteractionWiredEffect> effectsToExecute) {
 
-            THashSet<InteractionWiredCondition> conditions = room.getRoomSpecialTypes().getConditions(trigger.getX(), trigger.getY());
-            THashSet<InteractionWiredEffect> effects = room.getRoomSpecialTypes().getEffects(trigger.getX(), trigger.getY());
+    long millis = System.currentTimeMillis();
+    int roomUnitId = roomUnit != null ? roomUnit.getId() : -1;
 
-            boolean hasExtraOrEval = room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraOrEval.class);
-            if (!conditions.isEmpty() && hasExtraOrEval) {
-                ArrayList<WiredConditionType> matchedConditions = new ArrayList<>(conditions.size());
-                for (InteractionWiredCondition searchMatched : conditions) {
-                    if (!matchedConditions.contains(searchMatched.getType()) && searchMatched.execute(roomUnit, room, stuff)) {
-                        matchedConditions.add(searchMatched.getType());
+    if (!Emulator.isReady ||
+        !(
+            (Emulator.getConfig().getBoolean("wired.custom.enabled", false)
+                && (trigger.canExecute(millis) || roomUnitId > -1)
+                && trigger.userCanExecute(roomUnitId, millis))
+            ||
+            (!Emulator.getConfig().getBoolean("wired.custom.enabled", false)
+                && trigger.canExecute(millis))
+        ) ||
+        !trigger.execute(roomUnit, room, stuff)
+    ) {
+        return false;
+    }
+
+    trigger.activateBox(room, roomUnit, millis);
+
+    THashSet<InteractionWiredCondition> conditions =
+            room.getRoomSpecialTypes().getConditions(trigger.getX(), trigger.getY());
+
+    THashSet<InteractionWiredEffect> effects =
+            room.getRoomSpecialTypes().getEffects(trigger.getX(), trigger.getY());
+
+    // 🔥 QUITAMOS NEGATIVOS DEL STACK NORMAL
+    effects.removeIf(e ->
+            e instanceof WiredEffectTriggerStacksNegative ||
+            e instanceof WiredEffectTriggerStacksNegativeCondition
+    );
+
+    /* ===================================================== */
+    /* ============ ADDON ONE CONDITION + OREVAL ============ */
+    /* ===================================================== */
+
+    WiredAddonOneCondition addon =
+            conditions.stream()
+                    .filter(c -> c instanceof WiredAddonOneCondition)
+                    .map(c -> (WiredAddonOneCondition) c)
+                    .findFirst()
+                    .orElse(null);
+
+    conditions.removeIf(c -> c instanceof WiredAddonOneCondition);
+
+    boolean hasExtraOrEval =
+            room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraOrEval.class);
+
+    if (!conditions.isEmpty()) {
+        ArrayList<WiredConditionType> matched = new ArrayList<>();
+
+        for (InteractionWiredCondition c : conditions) {
+            if (!matched.contains(c.getType())
+                    && c.operator() == WiredConditionOperator.OR
+                    && c.execute(roomUnit, room, stuff)) {
+                matched.add(c.getType());
+            }
+        }
+
+        if (addon != null) {
+            int count = 0;
+
+            if (!addon.items.isEmpty()) {
+                for (WiredMatchFurniSetting setting : addon.items) {
+                    HabboItem item = room.getHabboItem(setting.item_id);
+                    if (!(item instanceof InteractionWiredCondition)) continue;
+
+                    InteractionWiredCondition c = (InteractionWiredCondition) item;
+                    if ((c.operator() == WiredConditionOperator.OR && matched.contains(c.getType())) ||
+                        (c.operator() == WiredConditionOperator.AND && c.execute(roomUnit, room, stuff))) {
+                        count++;
                     }
                 }
-                if(matchedConditions.isEmpty()) {
-                    return false;
+            } else {
+                for (InteractionWiredCondition c : conditions) {
+                    if ((c.operator() == WiredConditionOperator.OR && matched.contains(c.getType())) ||
+                        (c.operator() == WiredConditionOperator.AND && c.execute(roomUnit, room, stuff))) {
+                        count++;
+                    }
                 }
             }
-            if (!conditions.isEmpty() && !hasExtraOrEval) {
-                ArrayList<WiredConditionType> matchedConditions = new ArrayList<>(conditions.size());
-                for (InteractionWiredCondition searchMatched : conditions) {
-                    if (!matchedConditions.contains(searchMatched.getType()) && searchMatched.operator() == WiredConditionOperator.OR && searchMatched.execute(roomUnit, room, stuff)) {
-                        matchedConditions.add(searchMatched.getType());
-                    }
-                }
 
-                for (InteractionWiredCondition condition : conditions) {
-                    if (!((condition.operator() == WiredConditionOperator.OR && matchedConditions.contains(condition.getType())) ||
-                            (condition.operator() == WiredConditionOperator.AND && condition.execute(roomUnit, room, stuff))) &&
-                            !Emulator.getPluginManager().fireEvent(new WiredConditionFailedEvent(room, roomUnit, trigger, condition)).isCancelled()) {
+            int key;
+            try {
+                key = Integer.parseInt(addon.key);
+            } catch (Exception e) {
+                key = 0;
+            }
 
+            switch (addon.type) {
+                case 0: if (count != conditions.size()) return false; break;
+                case 1: if (count < 1) return false; break;
+                case 2: if (count < conditions.size() - 1) return false; break;
+                case 3: if (count != 0) return false; break;
+                case 4: if (count >= key) return false; break;
+                case 5: if (count <= key) return false; break;
+                case 6: if (count != key) return false; break;
+            }
+        } else {
+            if (hasExtraOrEval) {
+                if (matched.isEmpty()) return false;
+            } else {
+                for (InteractionWiredCondition c : conditions) {
+                    if (!((c.operator() == WiredConditionOperator.OR && matched.contains(c.getType())) ||
+                          (c.operator() == WiredConditionOperator.AND && c.execute(roomUnit, room, stuff))) &&
+                        !Emulator.getPluginManager()
+                                .fireEvent(new WiredConditionFailedEvent(room, roomUnit, trigger, c))
+                                .isCancelled()) {
                         return false;
                     }
                 }
             }
-
-            if (Emulator.getPluginManager().fireEvent(new WiredStackTriggeredEvent(room, roomUnit, trigger, effects, conditions)).isCancelled())
-                return false;
-
-            trigger.setCooldown(millis);
-
-            boolean hasExtraRandom = room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraRandom.class);
-            boolean hasExtraUnseen = room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraUnseen.class);
-            THashSet<InteractionWiredExtra> extras = room.getRoomSpecialTypes().getExtras(trigger.getX(), trigger.getY());
-
-            for (InteractionWiredExtra extra : extras) {
-                extra.activateBox(room, roomUnit, millis);
-            }
-
-            List<InteractionWiredEffect> effectList = new ArrayList<>(effects);
-
-            if (hasExtraRandom || hasExtraUnseen) {
-                Collections.shuffle(effectList);
-            }
-
-
-            if (hasExtraUnseen) {
-                for (InteractionWiredExtra extra : room.getRoomSpecialTypes().getExtras(trigger.getX(), trigger.getY())) {
-                    if (extra instanceof WiredExtraUnseen) {
-                        extra.setExtradata(extra.getExtradata().equals("1") ? "0" : "1");
-                        InteractionWiredEffect effect = ((WiredExtraUnseen) extra).getUnseenEffect(effectList);
-                        effectsToExecute.add(effect); // triggerEffect(effect, roomUnit, room, stuff, millis);
-                        break;
-                    }
-                }
-            } else {
-                for (final InteractionWiredEffect effect : effectList) {
-                    boolean executed = effectsToExecute.add(effect); //triggerEffect(effect, roomUnit, room, stuff, millis);
-                    if (hasExtraRandom && executed) {
-                        break;
-                    }
-                }
-            }
-
-            return !Emulator.getPluginManager().fireEvent(new WiredStackExecutedEvent(room, roomUnit, trigger, effects, conditions)).isCancelled();
         }
+    }
 
+    if (Emulator.getPluginManager()
+            .fireEvent(new WiredStackTriggeredEvent(room, roomUnit, trigger, effects, conditions))
+            .isCancelled()) {
         return false;
     }
 
-    private static boolean triggerEffect(InteractionWiredEffect effect, RoomUnit roomUnit, Room room, Object[] stuff, long millis) {
+    trigger.setCooldown(millis);
+
+    /* ===================================================== */
+    /* =================== EXTRAS / EFFECTS ================= */
+    /* ===================================================== */
+
+    boolean hasExtraRandom =
+            room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraRandom.class);
+    boolean hasExtraUnseen =
+            room.getRoomSpecialTypes().hasExtraType(trigger.getX(), trigger.getY(), WiredExtraUnseen.class);
+
+    for (InteractionWiredExtra extra :
+            room.getRoomSpecialTypes().getExtras(trigger.getX(), trigger.getY())) {
+        extra.activateBox(room, roomUnit, millis);
+    }
+
+    List<InteractionWiredEffect> effectList = new ArrayList<>(effects);
+    if (hasExtraRandom || hasExtraUnseen) {
+        Collections.shuffle(effectList);
+    }
+
+    if (hasExtraUnseen) {
+        for (InteractionWiredExtra extra :
+                room.getRoomSpecialTypes().getExtras(trigger.getX(), trigger.getY())) {
+            if (extra instanceof WiredExtraUnseen) {
+                extra.setExtradata(extra.getExtradata().equals("1") ? "0" : "1");
+                effectsToExecute.add(((WiredExtraUnseen) extra).getUnseenEffect(effectList));
+                break;
+            }
+        }
+    } else {
+        for (InteractionWiredEffect effect : effectList) {
+            boolean executed = effectsToExecute.add(effect);
+            if (hasExtraRandom && executed) break;
+        }
+    }
+
+    return !Emulator.getPluginManager()
+            .fireEvent(new WiredStackExecutedEvent(room, roomUnit, trigger, effects, conditions))
+            .isCancelled();
+}
+
+    public static boolean triggerEffect(InteractionWiredEffect effect, RoomUnit roomUnit, Room room, Object[] stuff, long millis) {
         boolean executed = false;
         if (effect != null && (effect.canExecute(millis) || (roomUnit != null && effect.requiresTriggeringUser() && Emulator.getConfig().getBoolean("wired.custom.enabled", false) && effect.userCanExecute(roomUnit.getId(), millis)))) {
             executed = true;

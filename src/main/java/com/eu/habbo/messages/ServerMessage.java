@@ -1,15 +1,17 @@
 package com.eu.habbo.messages;
 
-import com.eu.habbo.messages.outgoing.MessageComposer;
-import com.eu.habbo.util.PacketUtils;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.eu.habbo.messages.outgoing.MessageComposer;
+import com.eu.habbo.util.PacketUtils;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 
 public class ServerMessage {
 

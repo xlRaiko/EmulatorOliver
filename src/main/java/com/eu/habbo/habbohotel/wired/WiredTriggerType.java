@@ -27,7 +27,9 @@ public enum WiredTriggerType {
     CLICK_USER (7),
     CLICK_USER_OTHER (7),
     TAG (7),
-    PERIODICALLY_SHORT(15);
+    PERIODICALLY_SHORT(15),
+    CLICK_TILE(4),
+    CLICK_TO_USER(7);
 
     public final int code;
 
