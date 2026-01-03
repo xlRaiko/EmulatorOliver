@@ -28,7 +28,8 @@ public enum WiredEffectType {
     BOT_CLOTHES(26),
     BOT_TALK_TO_AVATAR(27),
     GIVE_SCORE_WIHOUT_TIMER(28),
-    ALTITUDE(29);
+    ALTITUDE(29),
+    USER_MOVE_ROTATE(30);
 
     public final int code;
 

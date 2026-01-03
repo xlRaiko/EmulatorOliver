@@ -202,6 +202,7 @@ import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectToggl
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacks;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegative;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegativeCondition;
+import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectUserMoveRotate;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectWhisper;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonAnimationDelay;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonNoAnimation;
@@ -430,6 +431,7 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_act_trigger_stack_negative", WiredEffectTriggerStacksNegative.class));
         this.interactionsList.add(new ItemInteraction("wf_act_trigger_stack_negative_conditions", WiredEffectTriggerStacksNegativeCondition.class));
         this.interactionsList.add(new ItemInteraction("wf_act_set_altitude", WiredEffectAltitude.class));
+        this.interactionsList.add(new ItemInteraction("wf_act_user_move_rotate", WiredEffectUserMoveRotate.class));
 
         this.interactionsList.add(new ItemInteraction("wf_cnd_has_furni_on", WiredConditionFurniHaveFurni.class));
         this.interactionsList.add(new ItemInteraction("wf_cnd_furnis_hv_avtrs", WiredConditionFurniHaveHabbo.class));
