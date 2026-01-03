@@ -569,4 +569,15 @@ public class HabboInfo implements Runnable {
 
         return HabboStats.load(this);
     }
+
+    // Agregar estos métodos:
+    private int animationDelay = 0;
+
+    public int getAnimationDelay() {
+    return this.animationDelay;
+    }
+
+    public void setAnimationDelay(int delay) {
+    this.animationDelay = delay;
+    }
 }

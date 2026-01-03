@@ -26,7 +26,8 @@ public enum WiredConditionType {
     DATE_RANGE(24),
     ACTOR_HAS_HANDITEM(25),
     NOT_ACTOR_HAS_HANDITEM(26),
-    ONE_CONDITION(27);
+    ONE_CONDITION(27),
+    MOVE_ANIMATION_DELAY(28);
 
     public final int code;
 

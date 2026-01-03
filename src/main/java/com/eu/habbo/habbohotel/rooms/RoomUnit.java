@@ -1,15 +1,32 @@
 package com.eu.habbo.habbohotel.rooms;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.eu.habbo.Emulator;
 import com.eu.habbo.habbohotel.bots.Bot;
 import com.eu.habbo.habbohotel.items.Item;
-import com.eu.habbo.habbohotel.items.interactions.*;
+import com.eu.habbo.habbohotel.items.interactions.InteractionTileWalkMagic;
+import com.eu.habbo.habbohotel.items.interactions.InteractionWater;
+import com.eu.habbo.habbohotel.items.interactions.InteractionWaterItem;
 import com.eu.habbo.habbohotel.items.interactions.interfaces.ConditionalGate;
 import com.eu.habbo.habbohotel.pets.Pet;
 import com.eu.habbo.habbohotel.pets.RideablePet;
 import com.eu.habbo.habbohotel.users.DanceType;
 import com.eu.habbo.habbohotel.users.Habbo;
 import com.eu.habbo.habbohotel.users.HabboItem;
+import com.eu.habbo.messages.outgoing.rooms.users.RoomUserActionComposer;
 import com.eu.habbo.messages.outgoing.rooms.users.RoomUserStatusComposer;
 import com.eu.habbo.plugin.Event;
 import com.eu.habbo.plugin.events.roomunit.RoomUnitLookAtPointEvent;
@@ -18,16 +35,10 @@ import com.eu.habbo.plugin.events.users.UserIdleEvent;
 import com.eu.habbo.plugin.events.users.UserTakeStepEvent;
 import com.eu.habbo.threading.runnables.RoomUnitKick;
 import com.eu.habbo.util.pathfinding.Rotation;
+
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.set.hash.THashSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.stream.Collectors;
 
 public class RoomUnit {
 
@@ -827,4 +838,30 @@ public class RoomUnit {
     public void setMoveBlockingTask(ScheduledFuture moveBlockingTask) {
         this.moveBlockingTask = moveBlockingTask;
     }
+
+    // Modificar el método que ejecuta animaciones:
+public void queueAnimation(RoomUserAction action) {
+    Habbo habbo = this.getRoom().getHabbo(this.getId());
+    if (habbo != null) {
+        int delay = habbo.getAnimationDelay();
+        
+        if (delay > 0) {
+            // Retrasar la animación
+            Emulator.getThreading().run(() -> {
+                this.sendChatUpdate(action);
+            }, delay);
+        } else {
+            // Ejecución normal
+            this.sendChatUpdate(action);
+        }
+    }
+}
+
+private void sendChatUpdate(RoomUserAction action) {
+    // Tu código actual para enviar la animación al cliente
+    Room room = this.getRoom();
+    if (room != null) {
+        room.sendComposer(new RoomUserActionComposer(this, action).compose());
+    }
+}
 }

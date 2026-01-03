@@ -143,6 +143,8 @@ import com.eu.habbo.habbohotel.items.interactions.pets.InteractionPetToy;
 import com.eu.habbo.habbohotel.items.interactions.totems.InteractionTotemHead;
 import com.eu.habbo.habbohotel.items.interactions.totems.InteractionTotemLegs;
 import com.eu.habbo.habbohotel.items.interactions.totems.InteractionTotemPlanet;
+import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotHasHandItem;
+import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotNotHandItem;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionDateRangeActive;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionFurniHaveFurni;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionFurniHaveHabbo;
@@ -152,8 +154,6 @@ import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditio
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboHasEffect;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboHasHandItem;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboNotHandItem;
-import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotHasHandItem;
-import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionBotNotHandItem;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionHabboWearsBadge;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionLessTimeElapsed;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionMatchStatePosition;
@@ -171,6 +171,7 @@ import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditio
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionTeamMember;
 import com.eu.habbo.habbohotel.items.interactions.wired.conditions.WiredConditionTriggerOnFurni;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectAlert;
+import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectAltitude;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectBotClothes;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectBotFollowHabbo;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectBotGiveHandItem;
@@ -202,6 +203,7 @@ import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTrigg
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegative;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectTriggerStacksNegativeCondition;
 import com.eu.habbo.habbohotel.items.interactions.wired.effects.WiredEffectWhisper;
+import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonAnimationDelay;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonNoAnimation;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredAddonOneCondition;
 import com.eu.habbo.habbohotel.items.interactions.wired.extra.WiredBlob;
@@ -225,7 +227,9 @@ import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerHab
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerHabboWalkOnFurni;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerRepeater;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerRepeaterLong;
+import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerRepeaterShort;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerScoreAchieved;
+import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerStateSelection;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerTeamLoses;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerTeamWins;
 import com.eu.habbo.habbohotel.items.interactions.wired.triggers.WiredTriggerTileClick;
@@ -375,6 +379,7 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_trg_says_something", WiredTriggerHabboSaysKeyword.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_periodically", WiredTriggerRepeater.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_period_long", WiredTriggerRepeaterLong.class));
+        this.interactionsList.add(new ItemInteraction("wf_trg_period_short", WiredTriggerRepeaterShort.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_state_changed", WiredTriggerFurniStateToggled.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_at_given_time", WiredTriggerAtSetTime.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_at_time_long", WiredTriggerAtTimeLong.class));
@@ -389,6 +394,7 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_trg_furniture_click", WiredTriggerClickFurni.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_click_user", WiredTriggerClickUser.class));
         this.interactionsList.add(new ItemInteraction("wf_trg_tile_click", WiredTriggerTileClick.class));
+        this.interactionsList.add(new ItemInteraction("wf_trg_stuff_state", WiredTriggerStateSelection.class));
 
 
         this.interactionsList.add(new ItemInteraction("wf_act_toggle_state", WiredEffectToggleFurni.class));
@@ -423,6 +429,7 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_act_give_effect", WiredEffectGiveEffect.class));
         this.interactionsList.add(new ItemInteraction("wf_act_trigger_stack_negative", WiredEffectTriggerStacksNegative.class));
         this.interactionsList.add(new ItemInteraction("wf_act_trigger_stack_negative_conditions", WiredEffectTriggerStacksNegativeCondition.class));
+        this.interactionsList.add(new ItemInteraction("wf_act_set_altitude", WiredEffectAltitude.class));
 
         this.interactionsList.add(new ItemInteraction("wf_cnd_has_furni_on", WiredConditionFurniHaveFurni.class));
         this.interactionsList.add(new ItemInteraction("wf_cnd_furnis_hv_avtrs", WiredConditionFurniHaveHabbo.class));
@@ -459,6 +466,7 @@ public class ItemManager {
         this.interactionsList.add(new ItemInteraction("wf_xtra_or_eval", WiredExtraOrEval.class));
         this.interactionsList.add(new ItemInteraction("wf_addon_one_condition", WiredAddonOneCondition.class));
         this.interactionsList.add(new ItemInteraction("wf_addon_no_animation", WiredAddonNoAnimation.class));
+        this.interactionsList.add(new ItemInteraction("wf_addon_animation_delay", WiredAddonAnimationDelay.class));
 
         this.interactionsList.add(new ItemInteraction("tile_click", InteractionTileClick.class));
 

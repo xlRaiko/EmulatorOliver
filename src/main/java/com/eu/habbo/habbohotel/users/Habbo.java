@@ -501,4 +501,12 @@ public class Habbo implements Runnable {
                 .flatMap(c -> Arrays.stream(c).boxed())
                 .collect(Collectors.toSet());
     }
+
+    public int getAnimationDelay() {
+        return this.getHabboInfo().getAnimationDelay();
+    }
+
+    public void setAnimationDelay(int delay) {
+        this.getHabboInfo().setAnimationDelay(delay);
+    }
 }
